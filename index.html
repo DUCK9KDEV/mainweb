@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <!--
+    极简扁平单页作品集
+    纯 HTML / CSS / JavaScript，无构建步骤，可直接部署到 GitHub Pages。
+    本文件按页面版块添加中文注释，方便替换内容与后续维护；注释不会显示在页面上。
+  -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- 页面基本信息：标题当前是占位内容，发布前请改成真实站点标题 -->
+  <title>这是标题，应该修改</title>
+  <!-- 搜索结果和浏览器摘要中显示的描述，可改成一句话介绍 -->
+  <meta name="description" content="我希望留下真正重要的东西。">
+  <meta name="color-scheme" content="light dark">
+  <!-- 浏览器地址栏 / 状态栏的主题色，深色模式下由 script.js 动态更新 -->
+  <meta name="theme-color" content="#f3f0e9">
+
+  <!-- 社交平台分享信息：目前仍是 STILL 的旧文案，建议与页面标题、描述同步修改 -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="这是标题，应该修改">
+  <meta property="og:description" content="DUCK9DEV的个人页面">
+
+  <!-- 站点图标、Google Fonts 字体和主样式表 -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    在页面绘制前恢复主题偏好，减少深色模式刷新时的闪白；
+    同时给 html 添加 js 类，让 CSS 知道可以启用入场动画。
+  -->
+  <script>
+    (function () {
+      document.documentElement.classList.add('js');
+      try {
+        var saved = localStorage.getItem('still-theme');
+        var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      } catch (error) { /* 隐私模式下保持默认主题 */ }
+    })();
+  </script>
+
+  <!-- 未启用 JavaScript 时：隐藏依赖脚本的控件，并让滚动显现的内容直接可见 -->
+  <noscript>
+    <style>
+      .loader, .cursor, .scroll-progress, .work-preview,
+      .menu-toggle, .theme-toggle, .header-clock, .contact-clock { display: none !important; }
+      .js .hero-fade, .js .title-inner, .js [data-reveal] { opacity: 1 !important; transform: none !important; }
+    </style>
+  </noscript>
+</head>
+<body>
+  <!-- 键盘用户的跳转链接：按 Tab 时首先出现，可直接跳到正文 -->
+  <a class="skip-link" href="#main">跳至主要内容</a>
+
+  <!--
+    ============================================================
+    1. 首次加载动画
+    script.js 会更新 #loaderCount 和 #loaderBar；
+    加载结束后给 body 添加 .is-ready，并让加载层向上移出。
+    ============================================================
+  -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-head">
+      <span class="loader-brand"><sup>®</sup></span>
+      <span class="loader-meta"><br></span>
+    </div>
+    <div class="loader-center">
+      <span class="loader-word">Hello！</span>
+      <span class="loader-count" id="loaderCount"></span>
+    </div>
+    <div class="loader-foot">
+      <span class="loader-note"></span>
+      <span class="loader-bar"><span id="loaderBar"></span></span>
+      <span class="loader-note"></span>
+    </div>
+  </div>
+
+  <!-- 自定义鼠标光标：只在支持精确指针的设备上启用 -->
+  <div class="cursor" id="cursor" aria-hidden="true">
+    <span class="cursor-ring"></span>
+    <span class="cursor-dot"></span>
+  </div>
+  <!-- 页面顶部阅读进度条，由 script.js 根据滚动比例更新 -->
+  <div class="scroll-progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+  <!--
+    ============================================================
+    2. 固定页头
+    滚动后添加 .is-scrolled；进入深色联系区时添加 .is-inverse。
+    ============================================================
+  -->
+  <header class="site-header" id="siteHeader">
+    <!--
+      站点 Logo 文字当前为“标题”，而加载层和页脚仍是 still®；
+      确定正式品牌名后，请在这三处统一替换。
+    -->
+    <a class="brand" href="#top" aria-label="STILL，返回顶部">标题<span class="brand-reg"></span></a>
+
+    <!-- 桌面导航：data-nav 的值与 work / about / contact 三个区块 id 对应，用于滚动高亮 -->
+    <nav class="desktop-nav" aria-label="主导航">
+      <a href="#work" data-nav="work"><span></span>作品</a>
+      <a href="#about" data-nav="about"><span></span>关于</a>
+      <a href="#contact" data-nav="contact"><span></span>联系</a>
+    </nav>
+
+    <div class="header-tools">
+      <!-- 香港时间：script.js 每 15 秒刷新所有 [data-clock] 元素 -->
+      <p class="header-clock">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>BJT</span>
+        <time data-clock>--:--</time>
+      </p>
+      <!-- 深浅主题切换按钮；用户选择会保存在 localStorage 的 still-theme 中 -->
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换至深色模式" aria-pressed="false">
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/>
+        </svg>
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+        </svg>
+      </button>
+      <!-- 桌面端联系入口；移动端会隐藏，改用右侧菜单 -->
+      <a class="header-cta" href="#contact">联系我 <span aria-hidden="true">↗</span></a>
+      <!-- 移动端菜单开关；aria-expanded 会随菜单开合自动更新 -->
+      <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开菜单" aria-expanded="false" aria-controls="siteMenu">
+        <span class="menu-bar"></span>
+        <span class="menu-bar"></span>
+      </button>
+    </div>
+  </header>
+
+  <!--
+    移动端全屏菜单
+    由 #menuToggle 控制；打开时 body 会添加 .menu-open 并锁定页面滚动。
+  -->
+  <div class="site-menu" id="siteMenu" aria-hidden="true">
+    <div class="menu-inner">
+      <p class="menu-eyebrow">Navigation / 导航</p>
+      <nav class="menu-links" aria-label="移动端导航">
+        <a class="menu-link" href="#work"><span class="menu-index">01</span><span class="menu-label">作品</span><span class="menu-arrow" aria-hidden="true">↗</span></a>
+        <a class="menu-link" href="#about"><span class="menu-index">02</span><span class="menu-label">关于</span><span class="menu-arrow" aria-hidden="true">↗</span></a>
+        <a class="menu-link" href="#contact"><span class="menu-index">03</span><span class="menu-label">联系</span><span class="menu-arrow" aria-hidden="true">↗</span></a>
+      </nav>
+      <!-- 菜单底部：邮箱、社交账号和香港时间；请替换成你的真实信息 -->
+      <div class="menu-foot">
+        <a href="mailto:hello@still.studio">未完工</a>
+        <div class="menu-socials">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">未完工</a>
+          <a href="https://www.are.na" target="_blank" rel="noopener noreferrer">未完工</a>
+        </div>
+        <span class="menu-clock">BJT <time data-clock>--:--</time></span>
+      </div>
+      <span class="menu-asterisk" aria-hidden="true">✳</span>
+    </div>
+  </div>
+
+  <main id="main">
+    <!--
+      ============================================================
+      3. 首屏 Hero
+      .hero-fade 配合内联的自定义延迟变量实现错峰入场；
+      .title-line > .title-inner 实现主标题逐行上滑。
+      ============================================================
+    -->
+    <section class="hero" id="top" aria-labelledby="heroTitle">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <!-- 顶部小标签：可改为你的行业、所在地或当前状态 -->
+          <p class="eyebrow hero-fade" style="--delay: .05s">
+            <span class="status-dot" aria-hidden="true"></span>
+            Independent design studio · Hong Kong
+          </p>
+
+          <!--
+            主标题：可见文字分两行存放；
+            aria-label 是读屏软件朗读的内容，修改标题时请一起更新。
+          -->
+          <h1 class="hero-title" id="heroTitle" aria-label="Less, but better.">
+            <span class="title-line"><span class="title-inner">Less,</span></span>
+            <span class="title-line"><span class="title-inner">but better<span class="accent-dot">.</span></span></span>
+          </h1>
+
+          <!-- 首屏介绍：可替换成你的定位、服务对象或一句话简介 -->
+          <p class="hero-lede hero-fade" style="--delay: .48s">
+            与时俱进<br>
+            为项目留下真正重要的东西。
+          </p>
+
+          <!-- 主行动按钮与次级链接；.magnetic 会触发磁吸跟随动效 -->
+          <div class="hero-actions hero-fade" style="--delay: .58s">
+            <a class="button magnetic" href="#work">
+              <span>查看项目</span>
+              <span class="button-icon" aria-hidden="true">↓</span>
+            </a>
+            <a class="quiet-link" href="#about">
+              <span>我的理念</span>
+              <span class="quiet-link-line" aria-hidden="true"></span>
+            </a>
+          </div>
+        </div>
+
+        <!--
+          首屏右侧当前只保留了圆形印章和下方坐标文字。
+          注意：原来的 .hero-visual / .hero-art / .art-card 主视觉已不在标记中，
+          如需恢复或继续精简，请同步检查这里的容器和结束标签是否配对，
+          并确认 styles.css 中 .hero-grid 的布局仍然适用。
+        -->
+
+            <!-- 旋转圆形文字印章：沿路径排列的文字可在 textPath 中替换 -->
+            
+          <!-- 首屏坐标装饰，可替换成你所在城市的经纬度 -->
+          <p class="hero-coord mono"></p>
+        </div>
+      </div>
+
+      <!-- 首屏底栏：滚动提示、服务关键词与版权信息 -->
+      <div class="hero-footer hero-fade" style="--delay: .72s">
+        <span class="scroll-cue">
+          <span class="scroll-track" aria-hidden="true"><span class="scroll-thumb"></span></span>
+          
+        </span>
+        <span class="hero-focus">&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;</span>
+        <span class="mono"></span>
+      </div>
+    </section>
+
+    <!--
+      ============================================================
+      4. 技能滚动文字带
+      两个 .marquee-group 内容完全相同，整体平移 50% 后形成无缝循环。
+      修改文字时请两份一起改，否则循环处会跳变。
+      ============================================================
+    -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <div class="marquee-group">
+          <span class="marquee-item">Stability</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Speed</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Creative Design</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Ultimate Experience</span><span class="marquee-star">✳</span>
+        </div>
+        <div class="marquee-group">
+          <span class="marquee-item">Stability</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Speed</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Creative Design</span><span class="marquee-star">✳</span>
+          <span class="marquee-item">Ultimate Experience</span><span class="marquee-star">✳</span>
+        </div>
+      </div>
+    </div>
+
+    <!--
+      ============================================================
+      5. 作品列表
+      - .project[data-project] 与下方 .preview-card[data-preview-card]
+        使用相同的 key 配对；新增或删除项目时两处必须同步修改。
+      - data-reveal 控制滚动进入视口时的显现动画。
+      ============================================================
+    -->
+    <section class="work section" id="work" aria-labelledby="workTitle">
+      <div class="container">
+        <div class="section-head" data-reveal>
+          <!-- 区块编号、英文小标题和时间范围 -->
+          <div class="section-meta">
+            <span class="section-num">01</span>
+            <span>Selected work</span>
+            <span class="meta-line" aria-hidden="true"></span>
+            <span>2026-The Future</span>
+          </div>
+
+          <!-- 大标题用 .line-mask 逐行显现；右侧是这一段落的简短说明 -->
+          <div class="section-heading">
+            <h2 class="display-title" id="workTitle">
+              <span class="line-mask"><span>Selected</span></span>
+              <span class="line-mask"><span>work<em>.</em></span></span>
+            </h2>
+            <p class="section-note">少一点，但更准确。<br>每个项目都从实际出发</p>
+          </div>
+        </div>
+
+        <div class="projects" id="projects">
+          <!-- 项目 01：软件工具箱；data-project="kinetic" 是内部配对标识，必须与下方预览卡一致 -->
+          <article class="project" data-project="kinetic">
+            <span class="project-num">01</span>
+            <div class="project-body">
+              <h3 class="project-title">软件工具箱<span class="project-cn">软件集成下载</span></h3>
+              <p class="project-tags">影音娱乐/工作运算</p>
+            </div>
+            <span class="project-type">Identity system<br>for a motion collective</span>
+            <span class="project-year"></span>
+          </article>
+
+          <!-- 项目 02：Web KAZUMI；data-project="halo" 是内部配对标识 -->
+          <article class="project" data-project="halo">
+            <span class="project-num">01</span>
+            <div class="project-body">
+              <h3 class="project-title">Web KAZUMI<span class="project-cn">在线番剧</span></h3>
+              <p class="project-tags">试验项目！</p>
+            </div>
+            <span class="project-type">A quieter home<br>for digital art</span>
+            <span class="project-year"></span>
+          </article>
+
+          
+
+        <!-- 列表底部：项目数量说明和联系引导 -->
+        <div class="work-foot" data-reveal>
+          <span class="mono">Projects</span>
+          <a class="inline-cta" href="#contact">下一个项目，可能与你 <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+
+      <!--
+        鼠标悬停作品行时跟随指针的预览卡，只在桌面精确指针设备上显示。
+        两张图片由根目录的 1.png、2.png 压缩而来，分别放在 assets 目录：
+        1.png 对应“软件工具箱”，2.png 对应“Web KAZUMI”。
+        data-preview-card 的 key 与上方项目行 data-project 一一对应。
+      -->
+      <div class="work-preview" id="workPreview" aria-hidden="true">
+        <div class="preview-shell">
+          <div class="preview-card" data-preview-card="kinetic">
+            <img
+              class="preview-image"
+              src="assets/preview-kinetic.webp"
+              alt="软件工具箱项目预览"
+              width="1200"
+              height="724"
+              loading="eager"
+              decoding="async">
+          </div>
+          <div class="preview-card" data-preview-card="halo">
+            <img
+              class="preview-image"
+              src="assets/preview-halo.webp"
+              alt="Web KAZUMI 项目预览"
+              width="1200"
+              height="724"
+              loading="eager"
+              decoding="async">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ============================================================
+      6. 关于与能力
+      ============================================================
+    -->
+    <section class="about section" id="about" aria-labelledby="aboutTitle">
+      <div class="container">
+        <div class="section-head" data-reveal>
+          <!-- 区块编号、英文小标题与成立时间 -->
+          <div class="section-meta">
+            <span class="section-num">02</span>
+            <span>Regrading the concept</span>
+            <span class="meta-line" aria-hidden="true"></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="about-grid">
+          <!-- 关于区标题：每个 .line-mask 对应一行，进入视口后逐行上滑 -->
+          <h2 class="about-statement" id="aboutTitle" data-reveal>
+            <span class="line-mask"><span>好的体验</span></span>
+            <span class="line-mask"><span>流畅</span></span>
+            <span class="line-mask about-statement-soft"><span>迅速</span></span>
+          </h2>
+
+          <!-- 工作室介绍与基础信息；内联的自定义延迟变量控制它比左侧标题稍晚出现 -->
+          <div class="about-copy" data-reveal style="--reveal-delay: 140ms">
+            <p class="about-lede"></p>
+            <p></p>
+            <dl class="about-fact<!--s-->">
+              <div><dt></dt><dd></dd></div>
+              <div><dt></dt><dd></dd></div>
+              <div><dt></dt><dd></dd></div>
+            </dl>
+          </div>
+        </div>
+
+        <!-- 服务范围：三列卡片，在移动端自动堆叠为单列 -->
+        <div class="services" data-reveal>
+          <article class="service">
+            <span class="service-num">01</span>
+            <h3>新装软件补全</h3>
+            <p>不想一个一个找？提供一站式下载</p>
+            <span class="service-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="service">
+            <span class="service-num">02</span>
+            <h3>Web KAZUMI</h3>
+            <p>不想下软件？</p>
+            <span class="service-arrow" aria-hidden="true">↗</span>
+          </article>
+          <article class="service">
+            <span class="service-num"></span>
+            <h3>更多内容？</h3>
+            <p>敬请期待</p>
+            <span class="service-arrow" aria-hidden="true">↗</span>
+          </article>
+        </div>
+
+        <!--
+          数字统计：进入视口后由 script.js 从 0 增长到目标值。
+          data-count 是目标值；data-pad 用于补零（例如 7 显示为 07）。
+        -->
+        <!--<div class="stats">
+          <div class="stat" data-reveal>
+            <span class="stat-number"><span data-count="48">48</span><sup>+</sup></span>
+            <p>已交付项目</p>
+          </div>
+          <div class="stat" data-reveal style="--reveal-delay: 90ms">
+            <span class="stat-number"><span data-count="7" data-pad="2">07</span></span>
+            <p>年持续实践</p>
+          </div>
+          <div class="stat" data-reveal style="--reveal-delay: 180ms">
+            <span class="stat-number"><span data-count="12">12</span></span>
+            <p>设计与创新奖项</p>
+          </div>
+        </div> -->
+      </div>
+    </section>
+  </main>
+
+  <!--
+    ============================================================
+    7. 页脚与联系区
+    固定深色背景；滚动进入这里时，页头会添加 .is-inverse 同步反色。
+    ============================================================
+  -->
+  <footer class="contact" id="contact" aria-labelledby="contactTitle">
+    <div class="container">
+      <div class="section-head contact-head" data-reveal>
+        <div class="section-meta">
+          <span class="section-num">End </span>
+          <span>More content</span>
+          <span class="meta-line" aria-hidden="true"></span>
+          <span>Let's continue</span>
+        </div>
+      </div>
+
+      <div class="contact-main">
+        <!-- 联系区巨型标语；<em> 内部的文字会显示为橙色强调 -->
+        <h2 class="contact-title" id="contactTitle" data-reveal>
+          更多内容<br><em></em>
+        </h2>
+
+        <div class="contact-side" data-reveal style="--reveal-delay: 120ms">
+          <p>有想法，或只是想打个招呼？<br>我们一直在！</p>
+          <!-- 邮箱链接和下方圆形按钮都使用 mailto，更换邮箱时两处都要修改 -->
+          <a class="contact-email" href="https://github.com/DUCK9KDEV">
+            <span>https://github.com/DUCK9KDEV</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <a class="contact-orb magnetic" href="https://github.com/DUCK9KDEV">
+            <span>Say Hello ↗</span>
+          </a>
+        </div>
+      </div>
+
+
+      <!-- 页脚底部：品牌、工作室信息、社交链接和版权 -->
+      <div class="footer-base">
+        <a class="footer-brand" href="#top" aria-label="STILL，返回顶部">CROSS<sup></sup></a>
+        <p class="footer-note">DUCK9DEV<br>你所想的，就在眼前</p>
+        <!-- 社交链接：把三个 href 替换成你的真实主页 -->
+        <nav class="footer-nav" aria-label="社交链接">
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+          <a href="https://www.are.na" target="_blank" rel="noopener noreferrer">Are.na <span aria-hidden="true">↗</span></a>
+        </nav>
+        <div class="footer-credit">
+          <!-- data-year 会由 script.js 自动替换为当前年份 -->
+          <span>© <span data-year>2026</span> 标题</span>
+          <span>Reserve the right</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!--
+    主交互脚本：加载动画、主题切换、香港时钟、滚动显现、数字增长、
+    移动端菜单、磁吸按钮、自定义光标和作品悬停预览。
+  -->
+  <script src="script.js" defer></script>
+</body>
+</html>
